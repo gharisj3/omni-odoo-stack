@@ -12,6 +12,16 @@ from odoo.http import request
 class OmniWhatsappWebhookController(http.Controller):
     """Meta webhook endpoints for inbound WhatsApp messages."""
 
+    @staticmethod
+    def _json_response(payload: dict, status_code: int):
+        """Return a JSON response with a consistent content type."""
+
+        return request.make_response(
+            json.dumps(payload),
+            headers=[("Content-Type", "application/json")],
+            status=status_code,
+        )
+
     @http.route("/whatsapp/webhook", type="http", auth="public", methods=["GET"], csrf=False)
     def verify_webhook(self, **kwargs):
         """Handle Meta verification challenges during webhook setup."""
@@ -27,7 +37,10 @@ class OmniWhatsappWebhookController(http.Controller):
     def receive_webhook(self, **_kwargs):
         """Persist inbound WhatsApp events and trigger automation when available."""
 
-        payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        try:
+            payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return self._json_response({"error": "Invalid JSON payload"}, 400)
         messages = payload.get("entry", [{}])[0].get("changes", [{}])[0].get("value", {}).get("messages", [])
         contacts = payload.get("entry", [{}])[0].get("changes", [{}])[0].get("value", {}).get("contacts", [])
         lead_model = request.env["crm.lead"].sudo()
@@ -56,5 +69,4 @@ class OmniWhatsappWebhookController(http.Controller):
             if automation_model:
                 automation_model.run_whatsapp_pipeline(record.id)
 
-        return request.make_response(json.dumps({"status": "accepted"}), headers=[("Content-Type", "application/json")], status=200)
-
+        return self._json_response({"status": "accepted", "messages_received": len(messages)}, 200)

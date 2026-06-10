@@ -3,6 +3,21 @@
   "nodes": [
     {
       "parameters": {
+        "width": 500,
+        "height": 220,
+        "content": "## WhatsApp Lead Flow\nThis demo workflow receives a Meta webhook payload, normalizes the message, creates a CRM lead in Odoo, asks the AI middleware for a reply, and logs failures back into Odoo.\n\nRequired environment variables:\n- OMNI_ODOO_BASE_URL\n- OMNI_AI_BASE_URL\n- OMNI_API_KEY\n- AI_SHARED_API_KEY\n- META_GRAPH_API_BASE_URL\n- META_WHATSAPP_TOKEN\n- META_PHONE_NUMBER_ID"
+      },
+      "id": "Lead_Note",
+      "name": "Workflow Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        120,
+        20
+      ]
+    },
+    {
+      "parameters": {
         "path": "whatsapp-lead",
         "httpMethod": "POST",
         "responseMode": "responseNode",
@@ -33,7 +48,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/lead",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/lead",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -60,7 +75,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://ai-middleware:8000/generate/message",
+        "url": "={{$env.OMNI_AI_BASE_URL}}/generate/message",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -87,7 +102,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "url": "={{$env.META_GRAPH_API_BASE_URL}}/{{$env.META_PHONE_NUMBER_ID}}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -99,7 +114,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"Extract Message\"].json.phone,\"type\":\"text\",\"text\":{\"body\": $json.message || 'Thanks, your request is now in our CRM and a consultant will follow up shortly.'}}"
+        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"Extract Message\"].json.phone,\"type\":\"text\",\"text\":{\"body\": $json.result?.message || $json.message || 'Thanks, your request is now in our CRM and a consultant will follow up shortly.'}}"
       },
       "id": "Send_Confirmation",
       "name": "Send Confirmation",
@@ -114,7 +129,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/automation/log",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/automation/log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -286,4 +301,3 @@
   "id": "omni-whatsapp-lead",
   "tags": []
 }
-

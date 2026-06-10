@@ -3,6 +3,21 @@
   "nodes": [
     {
       "parameters": {
+        "width": 470,
+        "height": 200,
+        "content": "## Invoice Processor Flow\nThis workflow accepts invoice text, sends it to the FastAPI extractor, validates the result, creates a draft vendor bill in Odoo, and notifies the sender on WhatsApp.\n\nDesigned for demo-safe operation with AI mock mode enabled when no Groq key is available."
+      },
+      "id": "Invoice_Note",
+      "name": "Workflow Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        20
+      ]
+    },
+    {
+      "parameters": {
         "path": "invoice-processor",
         "httpMethod": "POST",
         "responseMode": "responseNode"
@@ -32,7 +47,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://ai-middleware:8000/extract/invoice",
+        "url": "={{$env.OMNI_AI_BASE_URL}}/extract/invoice",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -100,7 +115,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/vendor-bill",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/vendor-bill",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -127,7 +142,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "url": "={{$env.META_GRAPH_API_BASE_URL}}/{{$env.META_PHONE_NUMBER_ID}}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -154,7 +169,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/automation/log",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/automation/log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

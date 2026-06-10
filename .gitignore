@@ -8,8 +8,12 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 .venv/
 venv/
+env/
+node_modules/
 
 postgres-data/
 odoo-data/
@@ -17,4 +21,6 @@ n8n-data/
 nginx/certs/
 nginx/acme/
 ai/.venv/
-
+runtime-exports/
+dist/
+build/

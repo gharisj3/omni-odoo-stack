@@ -19,15 +19,27 @@ class OmniLeadAPIController(http.Controller):
         received_key = request.httprequest.headers.get("X-Omni-API-Key")
         return bool(expected_key and received_key and expected_key == received_key)
 
+    @staticmethod
+    def _json_response(payload: dict, status_code: int):
+        """Return a JSON response with a consistent content type."""
+
+        return request.make_response(
+            json.dumps(payload),
+            headers=[("Content-Type", "application/json")],
+            status=status_code,
+        )
+
     @http.route("/api/omni/lead", type="http", auth="public", methods=["POST"], csrf=False)
     def create_lead(self, **_kwargs):
         """Create a CRM lead from a JSON payload sent by an external system."""
 
         if not self._authorize():
-            body = json.dumps({"error": "Unauthorized"})
-            return request.make_response(body, headers=[("Content-Type", "application/json")], status=401)
+            return self._json_response({"error": "Unauthorized"}, 401)
 
-        payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        try:
+            payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return self._json_response({"error": "Invalid JSON payload"}, 400)
         lead = request.env["crm.lead"].sudo().create_from_api(payload)
         response = {
             "id": lead.id,
@@ -35,9 +47,4 @@ class OmniLeadAPIController(http.Controller):
             "score": lead.omni_lead_score,
             "priority": lead.omni_priority,
         }
-        return request.make_response(
-            json.dumps(response),
-            headers=[("Content-Type", "application/json")],
-            status=201,
-        )
-
+        return self._json_response(response, 201)

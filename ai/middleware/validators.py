@@ -8,6 +8,21 @@ from decimal import Decimal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
+class HealthResponse(BaseModel):
+    """Health endpoint response."""
+
+    status: str
+    service: str
+    mode: str
+    groq_configured: bool
+
+
+class ErrorResponse(BaseModel):
+    """API error response."""
+
+    detail: str
+
+
 class LeadInput(BaseModel):
     """Incoming CRM lead payload for AI analysis."""
 
@@ -81,3 +96,23 @@ class MessageOutput(BaseModel):
     tone: str = Field(pattern="^(friendly|professional|empathetic|urgent)$")
     suggested_actions: list[str] = Field(min_length=1, max_length=5)
 
+
+class LeadAnalysisEnvelope(BaseModel):
+    """Lead analysis response including execution metadata."""
+
+    result: LeadAnalysis
+    mode: str
+
+
+class InvoiceExtractionEnvelope(BaseModel):
+    """Invoice extraction response including execution metadata."""
+
+    result: InvoiceData
+    mode: str
+
+
+class MessageGenerationEnvelope(BaseModel):
+    """Message generation response including execution metadata."""
+
+    result: MessageOutput
+    mode: str

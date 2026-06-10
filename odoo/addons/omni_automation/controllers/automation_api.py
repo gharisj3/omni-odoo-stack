@@ -19,14 +19,32 @@ class OmniAutomationAPIController(http.Controller):
         received_key = request.httprequest.headers.get("X-Omni-API-Key")
         return bool(expected_key and expected_key == received_key)
 
+    @staticmethod
+    def _json_response(payload: dict, status_code: int):
+        """Return a JSON response with a consistent content type."""
+
+        return request.make_response(
+            json.dumps(payload),
+            headers=[("Content-Type", "application/json")],
+            status=status_code,
+        )
+
+    def _parse_payload(self) -> dict:
+        """Parse the incoming request body as JSON."""
+
+        return json.loads(request.httprequest.data.decode("utf-8") or "{}")
+
     @http.route("/api/omni/automation/log", type="http", auth="public", methods=["POST"], csrf=False)
     def create_log(self, **_kwargs):
         """Store an automation event sent by an external workflow engine."""
 
         if not self._is_authorized():
-            return request.make_response(json.dumps({"error": "Unauthorized"}), headers=[("Content-Type", "application/json")], status=401)
+            return self._json_response({"error": "Unauthorized"}, 401)
 
-        payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        try:
+            payload = self._parse_payload()
+        except json.JSONDecodeError:
+            return self._json_response({"error": "Invalid JSON payload"}, 400)
         record = request.env["omni.automation.log"].sudo().create(
             {
                 "trigger": payload.get("trigger", "external_workflow"),
@@ -36,37 +54,26 @@ class OmniAutomationAPIController(http.Controller):
                 "error_message": payload.get("error_message"),
             }
         )
-        return request.make_response(json.dumps({"id": record.id, "status": record.status}), headers=[("Content-Type", "application/json")], status=201)
+        return self._json_response({"id": record.id, "status": record.status}, 201)
 
     @http.route("/api/omni/vendor-bill", type="http", auth="public", methods=["POST"], csrf=False)
     def create_vendor_bill(self, **_kwargs):
         """Create a draft vendor bill from structured invoice data."""
 
         if not self._is_authorized():
-            return request.make_response(json.dumps({"error": "Unauthorized"}), headers=[("Content-Type", "application/json")], status=401)
+            return self._json_response({"error": "Unauthorized"}, 401)
 
-        payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        try:
+            payload = self._parse_payload()
+        except json.JSONDecodeError:
+            return self._json_response({"error": "Invalid JSON payload"}, 400)
         partner_name = payload.get("vendor")
         if not partner_name:
-            return request.make_response(json.dumps({"error": "Vendor is required"}), headers=[("Content-Type", "application/json")], status=400)
+            return self._json_response({"error": "Vendor is required"}, 400)
 
         partner = request.env["res.partner"].sudo().search([("name", "=", partner_name)], limit=1)
         if not partner:
             partner = request.env["res.partner"].sudo().create({"name": partner_name, "supplier_rank": 1})
-
-        invoice_lines = []
-        for item in payload.get("line_items") or []:
-            invoice_lines.append(
-                (
-                    0,
-                    0,
-                    {
-                        "name": item.get("description") or "Imported line item",
-                        "quantity": item.get("quantity", 1),
-                        "price_unit": item.get("unit_price", item.get("total", 0)),
-                    },
-                )
-            )
 
         bill = request.env["account.move"].sudo().create(
             {
@@ -74,21 +81,30 @@ class OmniAutomationAPIController(http.Controller):
                 "partner_id": partner.id,
                 "invoice_date": payload.get("date"),
                 "ref": f"Imported - {partner_name}",
-                "invoice_line_ids": invoice_lines,
-                "narration": f"Imported by omni-odoo-stack with currency {payload.get('currency', 'USD')}.",
+                "narration": (
+                    "Imported by omni-odoo-stack.\n\n"
+                    f"Currency: {payload.get('currency', 'USD')}\n"
+                    f"Amount: {payload.get('amount', '0')}\n"
+                    f"Extracted payload:\n{json.dumps(payload, indent=2)}"
+                ),
             }
         )
         body = {"id": bill.id, "name": bill.name, "partner": partner.name}
-        return request.make_response(json.dumps(body), headers=[("Content-Type", "application/json")], status=201)
+        return self._json_response(body, 201)
 
     @http.route("/api/omni/hr/employee", type="http", auth="public", methods=["POST"], csrf=False)
     def create_employee(self, **_kwargs):
         """Create an HR employee record from an onboarding payload."""
 
         if not self._is_authorized():
-            return request.make_response(json.dumps({"error": "Unauthorized"}), headers=[("Content-Type", "application/json")], status=401)
+            return self._json_response({"error": "Unauthorized"}, 401)
 
-        payload = json.loads(request.httprequest.data.decode("utf-8") or "{}")
+        try:
+            payload = self._parse_payload()
+        except json.JSONDecodeError:
+            return self._json_response({"error": "Invalid JSON payload"}, 400)
+        if not payload.get("name"):
+            return self._json_response({"error": "Employee name is required"}, 400)
         employee = request.env["hr.employee"].sudo().create(
             {
                 "name": payload.get("name"),
@@ -98,4 +114,4 @@ class OmniAutomationAPIController(http.Controller):
             }
         )
         body = {"id": employee.id, "name": employee.name}
-        return request.make_response(json.dumps(body), headers=[("Content-Type", "application/json")], status=201)
+        return self._json_response(body, 201)

@@ -38,7 +38,7 @@ class OmniAIRequest(models.Model):
     def _middleware_endpoint(self, path: str) -> str:
         """Build a fully qualified middleware URL."""
 
-        base_url = os.getenv("OMNI_AI_ENDPOINT", "http://ai-middleware:8000").rstrip("/")
+        base_url = os.getenv("OMNI_AI_BASE_URL", "http://ai-middleware:8000").rstrip("/")
         return f"{base_url}{path}"
 
     @api.model
@@ -76,25 +76,34 @@ class OmniAIRequest(models.Model):
             response = requests.post(
                 self._middleware_endpoint("/analyze/lead"),
                 headers=self._api_headers(),
-                data=json.dumps(prompt_payload),
+                json=prompt_payload,
                 timeout=30,
             )
             response.raise_for_status()
             payload = response.json()
+            result = payload.get("result", payload)
+            usage = result.get("_usage", payload.get("_usage", {}))
             request_log.write(
                 {
                     "response": json.dumps(payload, indent=2),
-                    "tokens_used": int(payload.get("_usage", {}).get("total_tokens", 0)),
+                    "tokens_used": int(usage.get("total_tokens", 0)),
                     "status": "success",
+                    "model_used": usage.get(
+                        "model",
+                        "mock-heuristic" if payload.get("mode") == "mock" else os.getenv("GROQ_MODEL", "llama3-8b-8192"),
+                    ),
                 }
             )
             lead.write(
                 {
-                    "omni_ai_analysis": payload.get("summary"),
-                    "omni_priority": payload.get("priority", "medium"),
+                    "omni_ai_analysis": result.get("summary"),
+                    "omni_priority": result.get("priority", "medium"),
                     "omni_last_analysis_at": fields.Datetime.now(),
                 }
             )
+        except requests.RequestException as exc:
+            LOGGER.exception("Lead AI HTTP processing failed")
+            request_log.write({"status": "failed", "error_message": str(exc)})
         except Exception as exc:  # pylint: disable=broad-except
             LOGGER.exception("Lead AI processing failed")
             request_log.write({"status": "failed", "error_message": str(exc)})

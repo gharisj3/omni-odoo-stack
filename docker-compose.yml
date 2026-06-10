@@ -4,6 +4,7 @@ services:
   db:
     image: postgres:16
     container_name: omni-postgres
+    init: true
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -14,6 +15,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 10s
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -22,7 +24,10 @@ services:
   odoo:
     image: odoo:19
     container_name: omni-odoo
+    init: true
     restart: unless-stopped
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -34,14 +39,22 @@ services:
       POSTGRES_DB: ${ODOO_DB_NAME}
       ADMIN_PASSWD: ${ODOO_ADMIN_PASSWD}
       OMNI_API_KEY: ${OMNI_API_KEY}
-      OMNI_AI_ENDPOINT: ${OMNI_AI_ENDPOINT}
+      OMNI_AI_BASE_URL: ${OMNI_AI_BASE_URL}
       META_VERIFY_TOKEN: ${META_VERIFY_TOKEN}
       META_WHATSAPP_TOKEN: ${META_WHATSAPP_TOKEN}
       META_PHONE_NUMBER_ID: ${META_PHONE_NUMBER_ID}
       GROQ_API_KEY: ${GROQ_API_KEY}
+      AI_SHARED_API_KEY: ${AI_SHARED_API_KEY}
+      AI_MOCK_MODE: ${AI_MOCK_MODE}
     command: >
       sh -c "python3 -c \"import os, pathlib; template = pathlib.Path('/etc/odoo/odoo.conf').read_text(); pathlib.Path('/tmp/odoo.conf').write_text(os.path.expandvars(template))\" &&
       exec odoo -c /tmp/odoo.conf"
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8069/web/login', timeout=10)\""]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     volumes:
       - odoo-data:/var/lib/odoo
       - ./odoo/config/odoo.conf:/etc/odoo/odoo.conf:ro
@@ -56,13 +69,22 @@ services:
   ai-middleware:
     image: python:3.12-slim
     container_name: omni-ai
+    init: true
     restart: unless-stopped
     working_dir: /app
     env_file:
       - .env
+    environment:
+      OMNI_AI_BASE_URL: ${OMNI_AI_BASE_URL}
     command: >
       sh -c "pip install --no-cache-dir -r requirements.txt &&
       uvicorn middleware.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=10)\""]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
     volumes:
       - ./ai:/app
     expose:
@@ -73,13 +95,26 @@ services:
   n8n:
     image: docker.n8n.io/n8nio/n8n:1.95.3
     container_name: omni-n8n
+    init: true
     restart: unless-stopped
     env_file:
       - .env
     environment:
       N8N_BASIC_AUTH_ACTIVE: "true"
-      N8N_RUNNERS_ENABLED: "true"
+      N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED}
+      N8N_PORT: ${N8N_PORT}
+      N8N_PATH: ${N8N_PATH}
+      N8N_LOG_LEVEL: ${N8N_LOG_LEVEL}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
       GENERIC_TIMEZONE: Asia/Karachi
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:5678/healthz').then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));\""]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 45s
     volumes:
       - n8n-data:/home/node/.n8n
       - ./n8n/workflows:/data/imports:ro
@@ -91,11 +126,21 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: omni-nginx
+    init: true
     restart: unless-stopped
     depends_on:
-      - odoo
-      - n8n
-      - ai-middleware
+      odoo:
+        condition: service_healthy
+      n8n:
+        condition: service_healthy
+      ai-middleware:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ai/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
     ports:
       - "80:80"
       - "443:443"

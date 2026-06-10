@@ -1,0 +1,28 @@
+{
+  "entry": [
+    {
+      "changes": [
+        {
+          "value": {
+            "messages": [
+              {
+                "from": "923001234567",
+                "id": "wamid.demo-message-001",
+                "text": {
+                  "body": "We need help implementing Odoo CRM and WhatsApp lead routing."
+                }
+              }
+            ],
+            "contacts": [
+              {
+                "profile": {
+                  "name": "Northwind Foods"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

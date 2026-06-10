@@ -1,37 +1,35 @@
-# Omni Odoo Stack Architecture
+# Architecture
 
-`omni-odoo-stack` is a portfolio system that demonstrates how a free Odoo Community ERP can sit at the center of a modern automation architecture without requiring paid SaaS dependencies.
+`omni-odoo-stack` is structured as a production-style portfolio architecture that keeps ERP logic, workflow orchestration, messaging, and AI concerns separated but connected.
 
-## System Overview
+## Core Design
 
-- Odoo 19 Community manages CRM, ERP records, and custom automation logs.
-- PostgreSQL 16 stores transactional data for Odoo.
-- FastAPI provides a controlled AI boundary for Groq-backed inference.
-- n8n orchestrates webhook-driven workflows and external messaging.
-- Nginx provides the single public ingress path, SSL termination, and reverse proxy routing.
-- Meta WhatsApp Cloud API serves as the user-facing communication channel.
+- Odoo is the source of truth for CRM, automation logs, AI requests, and downstream operational records.
+- n8n coordinates webhook-based automation and outbound notifications.
+- FastAPI acts as a strict boundary for AI requests so prompt logic and model fallback behavior remain outside Odoo.
+- Nginx presents the stack through one ingress layer for local demos or OCI deployment.
+- PostgreSQL stores Odoo application data.
 
-## Runtime Flow
+## Service Relationships
 
-1. A WhatsApp message or form submission reaches a webhook.
-2. n8n normalizes the payload and sends it into Odoo.
-3. Odoo creates or updates the business object and records the interaction.
-4. Odoo or n8n calls the FastAPI middleware for AI enrichment.
-5. The middleware enforces request validation, calls Groq, and returns structured JSON.
-6. Odoo stores the analysis result and automation logs.
-7. n8n sends replies or downstream notifications through Meta WhatsApp Cloud API.
+- `db` supports Odoo persistence.
+- `odoo` exposes business records and custom APIs.
+- `ai-middleware` handles validated AI operations.
+- `n8n` consumes webhook events and calls Odoo plus the middleware.
+- `nginx` routes `/`, `/n8n/`, and `/ai/`.
 
-## Module Responsibilities
+## Demo-Safe AI Mode
 
-- `omni_crm`: Lead scoring, AI summary fields, and a lead intake API.
-- `omni_whatsapp`: Message persistence and inbound webhook handling.
-- `omni_ai`: AI request logging, middleware calls, and scheduled lead analysis.
-- `omni_automation`: Cross-system pipeline logging and dashboarding.
+The middleware supports:
 
-## Deployment Design Choices
+- live mode with Groq when `GROQ_API_KEY` is configured
+- mock mode when the key is missing or `AI_MOCK_MODE=true`
 
-- The project uses Odoo Community and n8n self-hosted to avoid recurring software licensing costs.
-- FastAPI is intentionally isolated from Odoo so AI logic can evolve without modifying ERP core code.
-- Nginx front-loads operational concerns like compression, TLS, and path routing.
-- Environment variables isolate secrets and deployment-specific values from source control.
+This allows the project to stay demo-ready even without external paid or rate-limited AI access.
 
+## Addon Boundaries
+
+- `omni_crm`: CRM enhancements and lead intake
+- `omni_whatsapp`: webhook and message storage
+- `omni_ai`: AI request logging and lead enrichment
+- `omni_automation`: orchestration logging and helper APIs

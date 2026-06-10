@@ -113,7 +113,6 @@ class CrmLead(models.Model):
         if not values["name"]:
             raise UserError(_("Lead name is required."))
         lead = self.create(values)
-        if os.getenv("OMNI_AI_ENDPOINT") and "omni.ai.request" in self.env:
+        if os.getenv("OMNI_AI_BASE_URL") and "omni.ai.request" in self.env:
             self.env["omni.ai.request"].sudo().process_lead(lead.id)
         return lead
-

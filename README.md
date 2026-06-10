@@ -3,26 +3,36 @@
 ```text
    ____  __  __ _   _ ___    ___   ___  ____   ___   ___    ____ _____  _    ____ _  __
   / __ \|  \/  | \ | |_ _|  / _ \ / _ \|  _ \ / _ \ / _ \  / ___|_   _|/ \  / ___| |/ /
- | |  | | |\/| |  \| || |  | | | | | | | | | | | | | | | | \___ \ | | / _ \| |   | ' / 
- | |__| | |  | | |\  || |  | |_| | |_| | |_| | |_| | |_| |  ___) || |/ ___ \ |___| . \ 
+ | |  | | |\/| |  \| || |  | | | | | | | | | | | | | | | | \___ \ | | / _ \| |   | ' /
+ | |__| | |  | | |\  || |  | |_| | |_| | |_| | |_| | |_| |  ___) || |/ ___ \ |___| . \
   \____/|_|  |_|_| \_|___|  \___/ \___/|____/ \___/ \___/  |____/ |_/_/   \_\____|_|\_\
 ```
 
 ![Odoo 19](https://img.shields.io/badge/Odoo-19-714B67)
 ![Python 3.12](https://img.shields.io/badge/Python-3.12-3776AB)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![Docker Compose](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![n8n](https://img.shields.io/badge/n8n-Self--Hosted-EA4B71)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115.0-009688)
 ![Groq](https://img.shields.io/badge/Groq-Llama3--8B-0A0A0A)
-![License MIT](https://img.shields.io/badge/License-MIT-green)
+![MIT License](https://img.shields.io/badge/License-MIT-green)
 
-## Overview
+## Project Headline
 
-`omni-odoo-stack` is a complete portfolio project that demonstrates a realistic $0 ERP implementation stack built around Odoo 19 Community, PostgreSQL, n8n automation, FastAPI middleware, Groq AI, and Meta WhatsApp Cloud API. The goal is to show how modern ERP customization, automation engineering, and AI-enriched workflows can be delivered without paid infrastructure or enterprise licensing.
+`omni-odoo-stack` is a production-style portfolio architecture for **Odoo backend automation**, **WhatsApp-connected workflows**, **AI middleware**, and **n8n orchestration**. It is designed for local or Oracle OCI Always Free deployment and packaged as a proof-of-work asset for ERP customization and automation engineering.
 
-The project is deployable on Oracle OCI Always Free Tier or any local machine that can run Docker. It keeps the upstream Odoo source pristine and places all custom behavior in installable addons under `odoo/addons/`.
+## Business Explanation
 
-## Architecture Diagram
+This project demonstrates how inbound leads, invoice text, and HR onboarding requests can move through one connected backend stack:
+
+- WhatsApp or webhooks collect the request
+- n8n orchestrates the workflow
+- Odoo stores the core business record
+- FastAPI validates and enriches data through AI
+- automation logs stay visible inside Odoo
+
+The result is a clean demo of how ERP, messaging, workflow automation, and AI can work together without paid infrastructure or enterprise licensing.
+
+## Architecture Overview
 
 ```text
                    +-------------------------------+
@@ -33,7 +43,7 @@ The project is deployable on Oracle OCI Always Free Tier or any local machine th
                                    v
                       +----------------------------+
                       |           Nginx            |
-                      | TLS, gzip, reverse proxy   |
+                      | TLS-ready reverse proxy    |
                       +-----+---------------+------+
                             |               |
                +------------+--+         +--+----------------+
@@ -48,8 +58,8 @@ The project is deployable on Oracle OCI Always Free Tier or any local machine th
                       |
                       v
             +---------------------+       +------------------+
-            | FastAPI Middleware  +------>+ Groq Free Tier   |
-            | validation + auth   |       | llama3-8b-8192   |
+            | FastAPI Middleware  +------>+ Groq or Mock AI  |
+            | validation + auth   |       | demo-safe mode   |
             +----------+----------+       +------------------+
                        |
                        v
@@ -62,283 +72,229 @@ The project is deployable on Oracle OCI Always Free Tier or any local machine th
 
 | Component | Version | Purpose | Cost |
 | --- | --- | --- | --- |
-| Odoo Community | 19.0 | ERP, CRM, business logic | $0 |
-| PostgreSQL | 16 | Transactional database | $0 |
-| Python | 3.12 | Middleware runtime | $0 |
-| FastAPI | 0.115.0 | AI API gateway | $0 |
-| Groq | Free tier | LLM inference | $0 |
+| Odoo Community | 19.0 | ERP, CRM, business records | $0 |
+| PostgreSQL | 16 | Odoo database | $0 |
+| FastAPI | 0.115.0 | AI middleware and API boundary | $0 |
+| Groq | Free tier | Live LLM inference | $0 |
+| Mock AI mode | Built-in | Demo-safe fallback without API access | $0 |
 | n8n | 1.95.3 | Workflow automation | $0 |
-| Nginx | 1.27 | Reverse proxy and TLS ingress | $0 |
+| Nginx | 1.27 | Reverse proxy and ingress | $0 |
+| Docker Compose | Current | Local and OCI stack orchestration | $0 |
 | Meta WhatsApp Cloud API | Free tier | Messaging channel | $0 |
-| Oracle OCI Ampere A1 | Always Free | Hosting target | $0 |
+| Oracle OCI Ampere A1 | Always Free | Recommended hosting target | $0 |
 
-## Features
+## What Each Service Does
 
-- Odoo 19 Community scaffold cloned directly from upstream branch `19.0`
-- Production-style Docker Compose stack with PostgreSQL, Odoo, FastAPI, n8n, and Nginx
-- Custom CRM extension with lead scoring, AI summary storage, and a lead intake API
-- WhatsApp webhook bridge with message history stored inside Odoo
-- AI request logging module with scheduled lead analysis
-- Automation dashboard and logging model for full pipeline visibility
-- FastAPI middleware with validated schemas and Groq-backed structured outputs
-- Three importable n8n workflows for lead capture, invoice processing, and HR onboarding
-- OCI-ready deployment pattern using only free-tier components
+- `db`: persists Odoo data in PostgreSQL
+- `odoo`: runs Odoo 19 Community with custom addons under `odoo/addons`
+- `ai-middleware`: exposes validated AI endpoints with live or mock mode
+- `n8n`: runs webhook-driven workflows for CRM, invoices, and onboarding
+- `nginx`: exposes Odoo, n8n, and AI through one public entry point
 
-## Phase Breakdown
+## Odoo Modules
 
-### Phase 1: Odoo 19 + PostgreSQL + Docker setup
+### `omni_crm`
 
-- Upstream Odoo 19 Community source cloned into `odoo-source`
-- Docker Compose services for Odoo, PostgreSQL, AI middleware, n8n, and Nginx
-- Centralized environment variables and production-minded Odoo config
+- Adds lead scoring, AI analysis fields, and WhatsApp shortcuts to CRM leads
+- Exposes `POST /api/omni/lead`
 
-### Phase 2: 4 custom Odoo modules
+### `omni_whatsapp`
 
-- `omni_crm`
-- `omni_whatsapp`
-- `omni_ai`
-- `omni_automation`
+- Stores inbound and outbound WhatsApp messages in Odoo
+- Exposes Meta webhook verification and message intake endpoints
 
-### Phase 3: FastAPI + Groq AI middleware
+### `omni_ai`
 
+- Logs AI requests and responses
+- Calls the FastAPI middleware from Odoo
+- Includes a cron job for background lead analysis
+
+### `omni_automation`
+
+- Tracks workflow events and failures
+- Exposes helper endpoints for vendor bill and employee creation
+- Provides automation monitoring views inside Odoo
+
+## n8n Workflows
+
+### `whatsapp_lead.json`
+
+- Receives WhatsApp webhook payloads
+- Creates a lead in Odoo
+- Calls the AI middleware for a reply
+- Sends a confirmation message
+- Logs failures back into Odoo
+
+### `invoice_processor.json`
+
+- Accepts invoice text
+- Extracts structured invoice fields through FastAPI
+- Creates a draft vendor bill in Odoo
+- Sends confirmation to the sender
+
+### `hr_onboarding.json`
+
+- Receives onboarding data
+- Creates an employee in Odoo
+- Generates a welcome message
+- Notifies both employee and HR manager via WhatsApp
+
+## AI Middleware
+
+The middleware lives in [ai/middleware](E:\odoo\omni-odoo-stack\ai\middleware) and provides:
+
+- `GET /health`
 - `POST /analyze/lead`
 - `POST /extract/invoice`
 - `POST /generate/message`
-- `GET /health`
 
-### Phase 4: n8n automation workflows
+Key behavior:
 
-- WhatsApp lead intake pipeline
-- Invoice processing pipeline
-- HR onboarding workflow
+- Pydantic v2 request and response validation
+- API key authentication via `X-API-Key`
+- live Groq mode when `GROQ_API_KEY` exists
+- mock mode when `AI_MOCK_MODE=true` or no Groq key is configured
+- request validation logging and consistent JSON errors
 
-## Quick Start
+## Local Setup
 
-1. `cd omni-odoo-stack`
-2. `cp .env.example .env`
-3. Edit `.env` with real Groq, Meta, and API keys
-4. `docker compose up -d`
-5. Open `http://localhost`
-6. Install `omni_crm`, `omni_whatsapp`, `omni_ai`, and `omni_automation`
-7. Open `http://localhost/n8n/` and import the workflow JSON files
-8. Test `http://localhost/ai/health`
-9. Trigger a sample lead through `POST /api/omni/lead`
+1. Clone the repository.
+2. Copy `.env.example` to `.env`.
+3. Fill in the required values.
+4. Start the stack:
 
-## Environment Variables
-
-| Variable | Purpose |
-| --- | --- |
-| `POSTGRES_DB` | Odoo PostgreSQL database name |
-| `POSTGRES_USER` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | PostgreSQL password |
-| `ODOO_ADMIN_PASSWD` | Odoo admin/master password |
-| `ODOO_DB_HOST` | Odoo database host |
-| `ODOO_DB_PORT` | Odoo database port |
-| `ODOO_DB_USER` | Odoo database user |
-| `ODOO_DB_PASSWORD` | Odoo database password |
-| `ODOO_DB_NAME` | Odoo database name |
-| `ODOO_PROXY_MODE` | Enable reverse proxy headers in Odoo |
-| `ODOO_HTTP_PORT` | Main Odoo HTTP port |
-| `ODOO_LONGPOLLING_PORT` | Odoo longpolling port |
-| `ODOO_LOG_LEVEL` | Odoo log verbosity |
-| `ODOO_WORKERS` | Odoo worker count |
-| `OMNI_API_KEY` | Shared key for n8n to Odoo custom APIs |
-| `OMNI_AI_ENDPOINT` | Base URL for AI middleware from Odoo |
-| `AI_SHARED_API_KEY` | Shared key for Odoo or n8n to FastAPI |
-| `GROQ_API_KEY` | Groq free-tier key |
-| `META_VERIFY_TOKEN` | Meta webhook verification token |
-| `META_WHATSAPP_TOKEN` | Meta WhatsApp Cloud API access token |
-| `META_PHONE_NUMBER_ID` | Meta sender phone number id |
-| `N8N_BASIC_AUTH_USER` | n8n login username |
-| `N8N_BASIC_AUTH_PASSWORD` | n8n login password |
-| `N8N_HOST` | Public n8n host |
-| `N8N_PROTOCOL` | Public n8n scheme |
-| `N8N_EDITOR_BASE_URL` | n8n base editor URL |
-| `N8N_WEBHOOK_URL` | n8n webhook base URL |
-| `N8N_ENCRYPTION_KEY` | n8n encryption secret |
-| `LETSENCRYPT_EMAIL` | Certificate registration email |
-| `NGINX_HOST` | Server hostname |
-
-## API Documentation
-
-### Odoo endpoints
-
-`POST /api/omni/lead`
-
-Request:
-
-```json
-{
-  "name": "Northwind Foods ERP Project",
-  "company": "Northwind Foods",
-  "email": "ops@northwind.example",
-  "phone": "+923001234567",
-  "description": "Need CRM, accounting, and warehouse automation rollout."
-}
+```bash
+docker compose up -d
 ```
 
-Response:
+5. Open:
 
-```json
-{
-  "id": 42,
-  "name": "Northwind Foods ERP Project",
-  "score": 8,
-  "priority": "high"
-}
+- `http://localhost` for Odoo
+- `http://localhost/n8n/` for n8n
+- `http://localhost/ai/health` for middleware health
+
+## Docker Commands
+
+```bash
+docker compose up -d
+docker compose ps
+docker compose logs -f
+docker compose down
 ```
 
-`GET /whatsapp/webhook`
+Or with the Makefile:
 
-- Used for Meta webhook verification.
-
-`POST /whatsapp/webhook`
-
-- Receives inbound WhatsApp messages and stores them in `omni.whatsapp.message`.
-
-`POST /api/omni/automation/log`
-
-- Creates automation audit events from n8n or external systems.
-
-`POST /api/omni/vendor-bill`
-
-- Creates a draft vendor bill from structured invoice extraction payloads.
-
-`POST /api/omni/hr/employee`
-
-- Creates a new employee record for onboarding workflows.
-
-### FastAPI endpoints
-
-`GET /ai/health`
-
-Response:
-
-```json
-{
-  "status": "ok",
-  "service": "omni-odoo-stack-ai"
-}
+```bash
+make up
+make logs
+make down
+make validate
+make test-ai
 ```
 
-`POST /ai/analyze/lead`
+## Environment Setup
 
-Request:
+Core variables to set:
 
-```json
-{
-  "name": "Acme Distribution ERP",
-  "email": "owner@acme.example",
-  "phone": "+923009999999",
-  "description": "Need Odoo migration, warehouse automation, and WhatsApp lead capture.",
-  "company": "Acme Distribution"
-}
+- `POSTGRES_DB`
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `ODOO_ADMIN_PASSWD`
+- `OMNI_API_KEY`
+- `AI_SHARED_API_KEY`
+
+Optional for live integrations:
+
+- `GROQ_API_KEY`
+- `META_WHATSAPP_TOKEN`
+- `META_PHONE_NUMBER_ID`
+- `LETSENCRYPT_EMAIL`
+
+## API Examples
+
+Analyze a lead:
+
+```bash
+curl -X POST http://localhost/ai/analyze/lead \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $AI_SHARED_API_KEY" \
+  -d @examples/lead_payload.json
 ```
 
-Response:
+Create a lead in Odoo:
 
-```json
-{
-  "score": 9,
-  "summary": "Well-scoped distribution ERP opportunity with clear automation upside.",
-  "next_action": "Schedule a discovery call and gather process maps.",
-  "priority": "high"
-}
+```bash
+curl -X POST http://localhost/api/omni/lead \
+  -H "Content-Type: application/json" \
+  -H "X-Omni-API-Key: $OMNI_API_KEY" \
+  -d @examples/lead_payload.json
 ```
 
-`POST /ai/extract/invoice`
+## Demo Flow
 
-Request:
+### WhatsApp Lead Demo
 
-```json
-{
-  "raw_text": "Vendor: Atlas Supplies\nDate: 2026-06-01\nTotal: 1550 USD\n1 x Steel Shelving 1550"
-}
-```
+1. Send or simulate a WhatsApp webhook payload.
+2. n8n normalizes the message and calls Odoo.
+3. Odoo stores the lead.
+4. FastAPI returns a structured reply in live or mock mode.
+5. Odoo and n8n store the workflow audit trail.
 
-Response:
+### Invoice Demo
 
-```json
-{
-  "vendor": "Atlas Supplies",
-  "amount": 1550,
-  "date": "2026-06-01",
-  "line_items": [
-    {
-      "description": "Steel Shelving",
-      "quantity": 1,
-      "unit_price": 1550,
-      "total": 1550
-    }
-  ],
-  "currency": "USD"
-}
-```
+1. Send invoice text into the invoice workflow.
+2. FastAPI extracts vendor bill fields.
+3. Odoo creates a draft vendor bill record.
+4. WhatsApp confirmation is sent back to the user.
 
-`POST /ai/generate/message`
+### HR Demo
 
-Request:
-
-```json
-{
-  "context": "A prospect asked when they can get a proposal.",
-  "customer_name": "Ayesha",
-  "intent": "follow_up"
-}
-```
-
-Response:
-
-```json
-{
-  "message": "Hi Ayesha, thanks for reaching out. We can send your proposal after a short discovery call tomorrow.",
-  "tone": "professional",
-  "suggested_actions": [
-    "Book discovery call",
-    "Collect current process notes"
-  ]
-}
-```
-
-## Demo Scenarios
-
-### Scenario 1: WhatsApp lead to CRM to AI
-
-1. Prospect messages the Meta WhatsApp number.
-2. Meta posts the event to n8n.
-3. n8n normalizes the payload and creates the lead in Odoo.
-4. AI middleware generates a response and Odoo logs the interaction.
-5. Capture the CRM lead record, AI summary, and automation log after the workflow completes.
-
-### Scenario 2: Invoice capture through WhatsApp
-
-1. Vendor sends invoice text or OCR output.
-2. n8n forwards the text to FastAPI for extraction.
-3. Odoo receives a vendor bill creation request.
-4. Capture the imported vendor bill draft and the matching automation audit log.
-
-### Scenario 3: HR onboarding automation
-
-1. HR submits a new employee form.
-2. n8n creates the employee in Odoo.
+1. Submit onboarding payload.
+2. Odoo creates the employee.
 3. FastAPI generates the welcome message.
-4. WhatsApp notifications go to the employee and HR manager.
-5. Capture the employee record, welcome message, and HR notification audit trail.
+4. Notifications are sent and logged.
 
-## Deployment Guide
+## Screenshots
 
-### Oracle OCI Always Free step by step
+Recommended screenshot targets are documented in [docs/screenshots.md](E:\odoo\omni-odoo-stack\docs\screenshots.md).
 
-1. Create an Ampere A1 VM with Ubuntu 24.04.
-2. Assign a reserved public IP if available.
-3. Open ports `80` and `443` in the VCN security rules.
-4. Install Docker Engine and Docker Compose plugin.
-5. Clone this repository.
-6. Copy `.env.example` to `.env` and insert real values.
-7. Run `docker compose up -d`.
-8. Point DNS to the VM.
-9. Provision Let's Encrypt certificates and update `nginx/nginx.conf`.
-10. Import the n8n workflows and register the webhook endpoints in Meta.
+Suggested captures:
+
+- CRM lead form with score and AI summary
+- WhatsApp message history
+- AI request log
+- Automation dashboard
+- n8n workflow canvases
+
+## Validation and Verification
+
+Syntax, JSON, and XML validation included:
+
+```bash
+python scripts/validate_project.py
+python scripts/check_env.py --env-file .env
+pytest ai/tests -q
+```
+
+Runtime verification instructions included:
+
+- [docs/testing.md](E:\odoo\omni-odoo-stack\docs\testing.md)
+- [docs/setup.md](E:\odoo\omni-odoo-stack\docs\setup.md)
+- [docs/deployment-oci.md](E:\odoo\omni-odoo-stack\docs\deployment-oci.md)
+
+## Known Limitation
+
+This repository has been upgraded into a cleaner, more demo-ready architecture and includes syntax, JSON, XML, and middleware endpoint validation. It should be described as a **production-style portfolio architecture**, not a fully production-tested deployment, until the full Docker runtime stack has been booted and verified on a machine with Docker available.
+
+## Portfolio Positioning
+
+This project is useful as a public proof-of-work asset for:
+
+- Odoo backend automation consulting
+- n8n workflow engineering
+- ERP middleware architecture
+- WhatsApp-connected operational workflows
+- AI-assisted business process design
 
 ## Built By
 
@@ -357,27 +313,6 @@ Fiverr: [https://www.fiverr.com/sellers/muhammadghar709](https://www.fiverr.com/
 Contra: [https://contra.com/muhammad_gharis_j2g71vgn](https://contra.com/muhammad_gharis_j2g71vgn)  
 WhatsApp: +92 303 2712221
 
-### Services Available
-
-- Custom Odoo module development (v14-v19)
-- n8n workflow automation
-- AI/LLM middleware for ERP systems
-- Oracle OCI / EPM FCCS / Fusion integrations
-- PostgreSQL optimization
-- WhatsApp API integration
-- White-label subcontract work for Odoo partners
-
-> "Let's start with a small scoped task and let the work speak for itself."
-
 ## License
 
 MIT License
-
-## Contributing
-
-Contributions are welcome through issues, design discussions, workflow improvements, deployment hardening, and additional open-source Odoo integrations. If you open a pull request, include:
-
-- A clear problem statement
-- Screenshots or logs for behavior changes
-- Test steps for Odoo, FastAPI, or n8n changes
-- Notes on any new environment variables or operational impact

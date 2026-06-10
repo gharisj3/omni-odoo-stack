@@ -3,6 +3,21 @@
   "nodes": [
     {
       "parameters": {
+        "width": 470,
+        "height": 200,
+        "content": "## HR Onboarding Flow\nThis workflow creates an employee record in Odoo, asks the AI middleware for a welcome message, sends WhatsApp notifications, and records the automation event in Odoo.\n\nUse the sample payload in examples/hr_onboarding_payload.json for a quick demo."
+      },
+      "id": "HR_Note",
+      "name": "Workflow Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        20
+      ]
+    },
+    {
+      "parameters": {
         "path": "hr-onboarding",
         "httpMethod": "POST",
         "responseMode": "responseNode"
@@ -19,7 +34,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/hr/employee",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/hr/employee",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -46,7 +61,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://ai-middleware:8000/generate/message",
+        "url": "={{$env.OMNI_AI_BASE_URL}}/generate/message",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -72,7 +87,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "url": "={{$env.META_GRAPH_API_BASE_URL}}/{{$env.META_PHONE_NUMBER_ID}}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -84,7 +99,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"HR Webhook\"].json.body.phone,\"type\":\"text\",\"text\":{\"body\": $json.message}}"
+        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"HR Webhook\"].json.body.phone,\"type\":\"text\",\"text\":{\"body\": $json.result?.message || $json.message}}"
       },
       "id": "Send_Employee_Welcome",
       "name": "Send Employee Welcome",
@@ -98,7 +113,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "url": "={{$env.META_GRAPH_API_BASE_URL}}/{{$env.META_PHONE_NUMBER_ID}}/messages",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -124,7 +139,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://odoo:8069/api/omni/automation/log",
+        "url": "={{$env.OMNI_ODOO_BASE_URL}}/api/omni/automation/log",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
