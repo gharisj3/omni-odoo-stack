@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: Demo WhatsApp messages linked to sample CRM leads. -->
+<odoo noupdate="1">
+    <record id="omni_whatsapp_message_demo_1" model="omni.whatsapp.message">
+        <field name="phone">+923001111111</field>
+        <field name="message">We need a proposal for a two-plant manufacturing ERP rollout.</field>
+        <field name="direction">in</field>
+        <field name="status">processed</field>
+        <field name="lead_id" ref="omni_crm.omni_crm_lead_1"/>
+    </record>
+    <record id="omni_whatsapp_message_demo_2" model="omni.whatsapp.message">
+        <field name="phone">+923002222222</field>
+        <field name="message">Thanks, we can schedule a discovery workshop on Thursday.</field>
+        <field name="direction">out</field>
+        <field name="status">sent</field>
+        <field name="lead_id" ref="omni_crm.omni_crm_lead_2"/>
+    </record>
+</odoo>

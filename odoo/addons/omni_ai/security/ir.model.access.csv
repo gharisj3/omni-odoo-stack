@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_omni_ai_request_user,access_omni_ai_request_user,model_omni_ai_request,base.group_system,1,1,1,1
+

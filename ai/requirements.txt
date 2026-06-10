@@ -1,0 +1,9 @@
+# Purpose: Python dependencies for the FastAPI and Groq AI middleware.
+
+fastapi==0.115.0
+uvicorn==0.30.0
+groq==0.9.0
+pydantic==2.8.0
+httpx==0.27.0
+python-dotenv==1.0.0
+

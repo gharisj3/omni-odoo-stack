@@ -1,0 +1,20 @@
+# Purpose: Ignore local runtime artifacts, secrets, and generated data for omni-odoo-stack.
+
+.env
+*.log
+*.pid
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+postgres-data/
+odoo-data/
+n8n-data/
+nginx/certs/
+nginx/acme/
+ai/.venv/
+

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: Views and menus for AI request history and operations. -->
+<odoo>
+    <record id="view_omni_ai_request_tree" model="ir.ui.view">
+        <field name="name">omni.ai.request.tree</field>
+        <field name="model">omni.ai.request</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="created_at"/>
+                <field name="lead_id"/>
+                <field name="model_used"/>
+                <field name="tokens_used"/>
+                <field name="status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_omni_ai_request_form" model="ir.ui.view">
+        <field name="name">omni.ai.request.form</field>
+        <field name="model">omni.ai.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="lead_id"/>
+                        <field name="model_used"/>
+                        <field name="tokens_used"/>
+                        <field name="status"/>
+                        <field name="created_at" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="prompt" widget="text"/>
+                        <field name="response" widget="text"/>
+                        <field name="error_message" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_omni_ai_requests" model="ir.actions.act_window">
+        <field name="name">AI Requests</field>
+        <field name="res_model">omni.ai.request</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_omni_ai_requests" name="Omni AI Requests" parent="base.menu_custom" action="action_omni_ai_requests" sequence="80"/>
+</odoo>

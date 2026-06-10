@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: CRM form, tree, and kanban extensions for the omni_crm module. -->
+<odoo>
+    <record id="view_crm_lead_form_omni" model="ir.ui.view">
+        <field name="name">crm.lead.form.omni</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group" position="inside">
+                <group string="Omni Qualification">
+                    <field name="omni_lead_score" readonly="1"/>
+                    <field name="omni_priority"/>
+                    <field name="omni_last_analysis_at" readonly="1"/>
+                    <field name="omni_ai_analysis" widget="text"/>
+                </group>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_run_ai_analysis" type="object" string="Analyze with AI" class="btn-primary"/>
+                <button name="action_open_whatsapp_chat" type="object" string="WhatsApp Contact" class="btn-secondary"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_tree_omni" model="ir.ui.view">
+        <field name="name">crm.lead.tree.omni</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="decoration-success">omni_lead_score &gt;= 8</attribute>
+                <attribute name="decoration-warning">omni_lead_score &gt;= 5 and omni_lead_score &lt; 8</attribute>
+                <attribute name="decoration-danger">omni_lead_score &lt; 5</attribute>
+            </xpath>
+            <xpath expr="//tree/field[@name='priority']" position="after">
+                <field name="omni_lead_score"/>
+                <field name="omni_priority"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_crm_lead_kanban_omni" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.omni</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="highlight_color">color</attribute>
+            </xpath>
+            <xpath expr="//templates/t[@t-name='card']//field[@name='name']" position="after">
+                <div class="mt-2">
+                    <strong>Score:</strong>
+                    <field name="omni_lead_score"/>
+                </div>
+                <div>
+                    <strong>Priority:</strong>
+                    <field name="omni_priority"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

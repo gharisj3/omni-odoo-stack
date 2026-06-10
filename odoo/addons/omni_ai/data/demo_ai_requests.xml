@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: Demo AI request logs for showcasing the middleware bridge. -->
+<odoo noupdate="1">
+    <record id="omni_ai_request_demo_1" model="omni.ai.request">
+        <field name="lead_id" ref="omni_crm.omni_crm_lead_1"/>
+        <field name="prompt">{"name": "Omni Manufacturing ERP Rollout"}</field>
+        <field name="response">{"score": 9, "summary": "High-value manufacturing rollout with clear scope.", "next_action": "Book discovery workshop.", "priority": "high"}</field>
+        <field name="tokens_used">244</field>
+        <field name="status">success</field>
+    </record>
+</odoo>
+

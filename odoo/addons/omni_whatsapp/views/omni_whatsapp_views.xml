@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: Views and menus for omni_whatsapp message history. -->
+<odoo>
+    <record id="view_omni_whatsapp_message_tree" model="ir.ui.view">
+        <field name="name">omni.whatsapp.message.tree</field>
+        <field name="model">omni.whatsapp.message</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="create_date"/>
+                <field name="phone"/>
+                <field name="direction"/>
+                <field name="status"/>
+                <field name="lead_id"/>
+                <field name="external_message_id"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_omni_whatsapp_message_form" model="ir.ui.view">
+        <field name="name">omni.whatsapp.message.form</field>
+        <field name="model">omni.whatsapp.message</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="phone"/>
+                        <field name="direction"/>
+                        <field name="status"/>
+                        <field name="lead_id"/>
+                        <field name="external_message_id"/>
+                    </group>
+                    <group>
+                        <field name="message" widget="text"/>
+                        <field name="payload" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_omni_whatsapp_messages" model="ir.actions.act_window">
+        <field name="name">WhatsApp Messages</field>
+        <field name="res_model">omni.whatsapp.message</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_omni_whatsapp_root" name="WhatsApp" parent="crm.crm_menu_root" sequence="45"/>
+    <menuitem id="menu_omni_whatsapp_messages" name="Message History" parent="menu_omni_whatsapp_root" action="action_omni_whatsapp_messages"/>
+</odoo>
+

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Purpose: Scheduled AI processing for leads that do not yet have an analysis. -->
+<odoo noupdate="1">
+    <record id="ir_cron_omni_ai_process_leads" model="ir.cron">
+        <field name="name">Omni AI Process Leads</field>
+        <field name="model_id" ref="model_omni_ai_request"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_process_unanalyzed_leads()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active">True</field>
+    </record>
+</odoo>
+

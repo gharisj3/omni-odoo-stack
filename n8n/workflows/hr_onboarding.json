@@ -1,0 +1,247 @@
+{
+  "name": "HR Onboarding Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "hr-onboarding",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "HR_Webhook",
+      "name": "HR Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://odoo:8069/api/omni/hr/employee",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Omni-API-Key",
+              "value": "={{$env.OMNI_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"name\": $json.body.name, \"email\": $json.body.email, \"phone\": $json.body.phone, \"job_title\": $json.body.job_title}"
+      },
+      "id": "Create_Employee",
+      "name": "Create Employee",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        420,
+        260
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ai-middleware:8000/generate/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{$env.AI_SHARED_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"context\": \"Create a warm employee welcome message for their first day and orientation.\", \"customer_name\": $json.body.name, \"intent\": \"hr_onboarding\"}"
+      },
+      "id": "Generate_Welcome_Message",
+      "name": "Generate Welcome Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.META_WHATSAPP_TOKEN}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"HR Webhook\"].json.body.phone,\"type\":\"text\",\"text\":{\"body\": $json.message}}"
+      },
+      "id": "Send_Employee_Welcome",
+      "name": "Send Employee Welcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$env.META_PHONE_NUMBER_ID}}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.META_WHATSAPP_TOKEN}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"messaging_product\":\"whatsapp\",\"to\": $item(0).$node[\"HR Webhook\"].json.body.hr_manager_phone,\"type\":\"text\",\"text\":{\"body\": \"New employee onboarded: \" + $item(0).$node[\"HR Webhook\"].json.body.name + \". Orientation checklist is ready in Odoo.\"}}"
+      },
+      "id": "Notify_HR_Manager",
+      "name": "Notify HR Manager",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://odoo:8069/api/omni/automation/log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Omni-API-Key",
+              "value": "={{$env.OMNI_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"trigger\":\"hr_onboarding\",\"action\":\"employee_created_and_notified\",\"status\":\"success\",\"payload\": $item(0).$node[\"HR Webhook\"].json.body}"
+      },
+      "id": "Log_Onboarding",
+      "name": "Log Onboarding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1140,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"onboarding_started\"}"
+      },
+      "id": "HR_Response",
+      "name": "HR Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.3,
+      "position": [
+        1380,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "HR Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create Employee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Employee": {
+      "main": [
+        [
+          {
+            "node": "Generate Welcome Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Welcome Message": {
+      "main": [
+        [
+          {
+            "node": "Send Employee Welcome",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify HR Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Employee Welcome": {
+      "main": [
+        [
+          {
+            "node": "Log Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify HR Manager": {
+      "main": [
+        [
+          {
+            "node": "Log Onboarding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Onboarding": {
+      "main": [
+        [
+          {
+            "node": "HR Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false,
+  "versionId": "2d4d40ee-b4f5-4e3d-b499-0d9f1e6095ab",
+  "meta": {},
+  "id": "omni-hr-onboarding",
+  "tags": []
+}
