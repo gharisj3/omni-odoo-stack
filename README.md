@@ -311,7 +311,7 @@ GitHub: [https://github.com/gharisj3](https://github.com/gharisj3)
 Website: [https://www.omni-academy.com](https://www.omni-academy.com)  
 Fiverr: [https://www.fiverr.com/sellers/muhammadghar709](https://www.fiverr.com/sellers/muhammadghar709)  
 Contra: [https://contra.com/muhammad_gharis_j2g71vgn](https://contra.com/muhammad_gharis_j2g71vgn)  
-WhatsApp: +92 303 2712221
+WhatsApp : @muhammadgharis
 
 ## License
 
