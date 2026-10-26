@@ -1,5 +1,7 @@
 # OMNI ODOO STACK
 
+**Status: production-style integration demo, not a verified production deployment.** Custom addon code, workflow exports and live/mock AI middleware are present. Local checks cover syntax, data files and middleware tests. The full Odoo/n8n/proxy stack and live WhatsApp flow have not been verified end to end in this maintenance run. Pricing/free-tier entries below are conditional development targets, not promises of free production operation.
+
 ```text
    ____  __  __ _   _ ___    ___   ___  ____   ___   ___    ____ _____  _    ____ _  __
   / __ \|  \/  | \ | |_ _|  / _ \ / _ \|  _ \ / _ \ / _ \  / ___|_   _|/ \  / ___| |/ /
@@ -30,7 +32,7 @@ This project demonstrates how inbound leads, invoice text, and HR onboarding req
 - FastAPI validates and enriches data through AI
 - automation logs stay visible inside Odoo
 
-The result is a clean demo of how ERP, messaging, workflow automation, and AI can work together without paid infrastructure or enterprise licensing.
+The repository illustrates how ERP, messaging, workflow automation and AI can fit together. The supplied tests cover mock middleware behavior; real end-to-end delivery remains to be verified. Free-tier deployment is a possible constrained target, not a zero-cost operating guarantee.
 
 ## Architecture Overview
 
@@ -70,7 +72,7 @@ The result is a clean demo of how ERP, messaging, workflow automation, and AI ca
 
 ## Tech Stack
 
-| Component | Version | Purpose | Cost |
+| Component | Version | Purpose | Development/free-tier target, subject to limits |
 | --- | --- | --- | --- |
 | Odoo Community | 19.0 | ERP, CRM, business records | $0 |
 | PostgreSQL | 16 | Odoo database | $0 |
@@ -141,7 +143,7 @@ The result is a clean demo of how ERP, messaging, workflow automation, and AI ca
 
 ## AI Middleware
 
-The middleware lives in [ai/middleware](E:\odoo\omni-odoo-stack\ai\middleware) and provides:
+The middleware lives in [ai/middleware](ai/middleware) and provides:
 
 - `GET /health`
 - `POST /analyze/lead`
@@ -256,7 +258,7 @@ curl -X POST http://localhost/api/omni/lead \
 
 ## Screenshots
 
-Recommended screenshot targets are documented in [docs/screenshots.md](E:\odoo\omni-odoo-stack\docs\screenshots.md).
+Recommended screenshot targets are documented in [docs/screenshots.md](docs/screenshots.md).
 
 Suggested captures:
 
@@ -278,9 +280,9 @@ pytest ai/tests -q
 
 Runtime verification instructions included:
 
-- [docs/testing.md](E:\odoo\omni-odoo-stack\docs\testing.md)
-- [docs/setup.md](E:\odoo\omni-odoo-stack\docs\setup.md)
-- [docs/deployment-oci.md](E:\odoo\omni-odoo-stack\docs\deployment-oci.md)
+- [docs/testing.md](docs/testing.md)
+- [docs/setup.md](docs/setup.md)
+- [docs/deployment-oci.md](docs/deployment-oci.md)
 
 ## Known Limitation
 
@@ -296,12 +298,16 @@ This project is useful as a public proof-of-work asset for:
 - WhatsApp-connected operational workflows
 - AI-assisted business process design
 
+## Attribution
+
+Original integration material is maintained by Muhammad Gharis Javed. The vendored `odoo-source/` tree is upstream Odoo, with its own copyright and LGPL/dependency notices. The top-level project license does not relicense that upstream code.
+
 ## Built By
 
 Muhammad Gharis Javed  
-Odoo ERP & Backend Automation Specialist | 8+ Years Production Experience
+Odoo ERP & Backend Automation Specialist
 
-This project was built as a live portfolio demonstrating real production-grade Odoo ERP customization, n8n automation, WhatsApp integration, and AI middleware engineering - all on a $0 infrastructure stack.
+This repository demonstrates Odoo customization, n8n workflow templates, WhatsApp integration code and live/mock AI middleware. It has not established a fully verified production deployment. Local development can use existing hardware; any free-tier hosting or API usage depends on provider limits, availability and workload.
 
 If you need similar work done for your business or Odoo partner firm:
 
